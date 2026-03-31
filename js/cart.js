@@ -1,10 +1,23 @@
 // Cart System
 const cart = {
     items: JSON.parse(localStorage.getItem('luxe_cart') || '[]'),
+    autoHideTimer: null,
+    autoHideDuration: 10000, // 10 seconds
 
     init() {
         this.updateCount();
         this.render();
+        this.setupCartInteractions();
+    },
+
+    setupCartInteractions() {
+        const slideCart = document.getElementById('slideCart');
+        if (slideCart) {
+            // Reset auto-hide timer on interaction
+            slideCart.addEventListener('mouseenter', () => this.cancelAutoHide());
+            slideCart.addEventListener('mouseleave', () => this.startAutoHide());
+            slideCart.addEventListener('click', () => this.resetAutoHide());
+        }
     },
 
     addItem(productId, quantity = 1, size = null, color = null) {
@@ -83,6 +96,42 @@ const cart = {
             count.textContent = itemCount;
             count.classList.toggle('hidden', itemCount === 0);
         }
+        this.updateCartPreview();
+    },
+
+    updateCartPreview() {
+        const previewItems = document.getElementById('cartPreviewItems');
+        const previewTotal = document.getElementById('cartPreviewTotal');
+        
+        if (!previewItems) return;
+
+        if (this.items.length === 0) {
+            previewItems.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">Your cart is empty</p>';
+        } else {
+            const recentItems = this.items.slice(0, 3);
+            previewItems.innerHTML = recentItems.map(item => {
+                const product = products.getById(item.id);
+                if (!product) return '';
+                return `
+                    <div class="mini-cart-item">
+                        <img src="${product.image}" alt="${product.name}" class="w-12 h-12 rounded-lg object-cover">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate">${product.name}</p>
+                            <p class="text-xs text-gray-400">Qty: ${item.quantity}</p>
+                        </div>
+                        <span class="text-sm font-semibold">$${((product.isSale ? product.salePrice : product.price) * item.quantity).toFixed(2)}</span>
+                    </div>
+                `;
+            }).join('');
+            
+            if (this.items.length > 3) {
+                previewItems.innerHTML += `<p class="text-xs text-gray-500 text-center mt-3">+${this.items.length - 3} more items</p>`;
+            }
+        }
+
+        if (previewTotal) {
+            previewTotal.textContent = `$${this.getTotal().toFixed(2)}`;
+        }
     },
 
     open() {
@@ -92,6 +141,8 @@ const cart = {
             overlay.classList.add('open');
             slideCart.classList.add('open');
             document.body.style.overflow = 'hidden';
+            this.render();
+            this.startAutoHide();
         }
     },
 
@@ -102,7 +153,42 @@ const cart = {
             overlay.classList.remove('open');
             slideCart.classList.remove('open');
             document.body.style.overflow = '';
+            this.cancelAutoHide();
         }
+    },
+
+    startAutoHide() {
+        this.cancelAutoHide();
+        const timerBar = document.getElementById('cartTimerBar');
+        if (timerBar) {
+            timerBar.style.transition = `width ${this.autoHideDuration}ms linear`;
+            timerBar.style.width = '0%';
+        }
+        
+        this.autoHideTimer = setTimeout(() => {
+            this.close();
+        }, this.autoHideDuration);
+    },
+
+    cancelAutoHide() {
+        if (this.autoHideTimer) {
+            clearTimeout(this.autoHideTimer);
+            this.autoHideTimer = null;
+        }
+        const timerBar = document.getElementById('cartTimerBar');
+        if (timerBar) {
+            timerBar.style.transition = 'none';
+            timerBar.style.width = '100%';
+        }
+    },
+
+    resetAutoHide() {
+        const timerBar = document.getElementById('cartTimerBar');
+        if (timerBar) {
+            timerBar.style.transition = 'none';
+            timerBar.style.width = '100%';
+        }
+        this.startAutoHide();
     },
 
     render() {

@@ -1,12 +1,103 @@
 // UI Utilities and Interactions
 const ui = {
     isDarkMode: true,
+    scrollThreshold: 50,
 
     init() {
-        this.initScrollAnimations();
-        this.initStickyHeader();
+        this.initAOS();
+        this.initParallax();
+        this.initSmartNavbar();
+        this.initBackToTop();
         this.initSmoothScroll();
+        this.initNewsletterScrollTrigger();
         lucide.createIcons();
+    },
+
+    // Initialize AOS (Animate On Scroll)
+    initAOS() {
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                once: true,
+                offset: 100,
+                easing: 'ease-out-cubic'
+            });
+        }
+    },
+
+    // Parallax Hero Effect
+    initParallax() {
+        const heroSection = document.getElementById('home');
+        if (!heroSection) return;
+
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = heroSection.querySelectorAll('.parallax-layer');
+            
+            parallaxElements.forEach((el, index) => {
+                const speed = 0.5 + (index * 0.1);
+                el.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+    },
+
+    // Smart Navbar with scroll effects
+    initSmartNavbar() {
+        const navbar = document.getElementById('navbar');
+        if (!navbar) return;
+
+        let lastScroll = 0;
+        
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > this.scrollThreshold) {
+                navbar.classList.add('navbar-scrolled');
+                navbar.classList.remove('navbar-transparent');
+            } else {
+                navbar.classList.remove('navbar-scrolled');
+                navbar.classList.add('navbar-transparent');
+            }
+            
+            lastScroll = currentScroll;
+        });
+    },
+
+    // Back to Top Button
+    initBackToTop() {
+        const backToTop = document.getElementById('backToTop');
+        if (!backToTop) return;
+
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 500) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+    },
+
+    scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    },
+
+    // Cart Preview Dropdown
+    showCartPreview() {
+        const preview = document.getElementById('cartPreview');
+        const cartCount = document.getElementById('cartCount');
+        if (preview && cartCount && !cartCount.classList.contains('hidden')) {
+            preview.classList.add('open');
+        }
+    },
+
+    hideCartPreview() {
+        const preview = document.getElementById('cartPreview');
+        if (preview) {
+            preview.classList.remove('open');
+        }
     },
 
     // Mobile Menu
@@ -196,46 +287,58 @@ const ui = {
         }, 3000);
     },
 
-    // Scroll Animations
-    initScrollAnimations() {
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
-        };
+    // Stock Badge
+    getStockBadge(stock) {
+        if (stock <= 5) {
+            return `<span class="stock-badge">Only ${stock} left!</span>`;
+        }
+        return '';
+    },
+
+    // Wishlist Sparkle Animation
+    sparkleWishlist(element) {
+        element.classList.add('sparkle-active');
+        setTimeout(() => {
+            element.classList.remove('sparkle-active');
+        }, 300);
+    },
+
+    // Newsletter Scroll Trigger
+    initNewsletterScrollTrigger() {
+        const newsletter = document.querySelector('.newsletter-slide');
+        if (!newsletter) return;
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-slide-up');
-                    entry.target.style.opacity = '1';
-                    observer.unobserve(entry.target);
+                    entry.target.classList.add('visible');
                 }
             });
-        }, observerOptions);
+        }, { threshold: 0.5 });
 
-        document.querySelectorAll('section').forEach(section => {
-            section.style.opacity = '0';
-            observer.observe(section);
-        });
+        observer.observe(newsletter);
     },
 
-    // Sticky Header
-    initStickyHeader() {
-        const navbar = document.getElementById('navbar');
-        if (!navbar) return;
-
-        let lastScroll = 0;
-        window.addEventListener('scroll', () => {
-            const currentScroll = window.pageYOffset;
+    // 3D Tilt Effect
+    initTiltEffect(element) {
+        if (!element) return;
+        
+        element.addEventListener('mousemove', (e) => {
+            const rect = element.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
             
-            if (currentScroll > 100) {
-                navbar.classList.add('glass');
-            } else {
-                navbar.classList.remove('glass');
-            }
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
             
-            lastScroll = currentScroll;
+            const rotateX = (y - centerY) / 10;
+            const rotateY = (centerX - x) / 10;
+            
+            element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        
+        element.addEventListener('mouseleave', () => {
+            element.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
         });
     },
 

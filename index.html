@@ -6,6 +6,8 @@
     <title>LUXE | Premium Streetwear</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -35,6 +37,9 @@
                         'fade-in': 'fadeIn 0.5s ease-out',
                         'slide-up': 'slideUp 0.5s ease-out',
                         'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'bounce-gentle': 'bounceGentle 2s ease-in-out infinite',
                     },
                     keyframes: {
                         fadeIn: {
@@ -48,6 +53,18 @@
                         pulseGlow: {
                             '0%, 100%': { boxShadow: '0 0 20px rgba(124, 58, 237, 0.3)' },
                             '50%': { boxShadow: '0 0 40px rgba(124, 58, 237, 0.6)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' },
+                        },
+                        bounceGentle: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
                         },
                     },
                 }
@@ -189,14 +206,457 @@
         .zoom-container:hover .zoom-image {
             transform: scale(1.2);
         }
+        
+        /* Smart Navbar Styles */
+        .navbar-scrolled {
+            background: rgba(11, 11, 11, 0.95) !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .navbar-transparent {
+            background: transparent !important;
+        }
+        
+        /* Search expand animation */
+        .search-expand {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .search-expand:focus {
+            width: 280px !important;
+        }
+        
+        /* Cart preview dropdown */
+        .cart-preview {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .cart-preview.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        
+        /* Parallax Hero */
+        .parallax-layer {
+            will-change: transform;
+        }
+        
+        /* 3D Tilt Card */
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+        }
+        
+        .tilt-card-inner {
+            transform: translateZ(20px);
+        }
+        
+        /* Flip Product Card */
+        .flip-card {
+            perspective: 1000px;
+        }
+        
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+        
+        /* Filter Sidebar */
+        .filter-sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .filter-sidebar.open {
+            transform: translateX(0);
+        }
+        
+        /* Trending Carousel */
+        .carousel-container {
+            overflow: hidden;
+            cursor: grab;
+        }
+        
+        .carousel-container:active {
+            cursor: grabbing;
+        }
+        
+        .carousel-track {
+            display: flex;
+            gap: 1.5rem;
+            transition: transform 0.5s ease;
+        }
+        
+        /* Auto-scroll animation */
+        @keyframes carousel-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        .carousel-auto {
+            animation: carousel-scroll 30s linear infinite;
+        }
+        
+        .carousel-auto:hover {
+            animation-play-state: paused;
+        }
+        
+        /* Smart Newsletter */
+        .newsletter-slide {
+            transform: translateY(100%);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .newsletter-slide.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* Stock Badge */
+        .stock-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Sparkle Animation for Wishlist */
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        
+        .sparkle-active {
+            animation: sparkle 0.3s ease;
+            color: #ef4444 !important;
+            fill: #ef4444 !important;
+        }
+        
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 40;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.6);
+        }
+        
+        /* Mobile Slide Menu */
+        .mobile-slide-menu {
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .mobile-slide-menu.open {
+            transform: translateX(0);
+        }
+        
+        /* Price Range Slider */
+        .price-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #2a2a2a;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .price-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(124, 58, 237, 0.4);
+        }
+        
+        /* Color Swatches */
+        .color-swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .color-swatch:hover, .color-swatch.active {
+            border-color: white;
+            transform: scale(1.1);
+        }
+        
+        /* Size Buttons */
+        .size-btn {
+            min-width: 40px;
+            height: 40px;
+            border: 2px solid #2a2a2a;
+            background: transparent;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .size-btn:hover, .size-btn.active {
+            border-color: #7c3aed;
+            background: rgba(124, 58, 237, 0.2);
+        }
+        
+        /* Mini Cart Item */
+        .mini-cart-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.2s ease;
+        }
+        
+        .mini-cart-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Cart Auto-hide Timer */
+        .cart-timer-bar {
+            height: 3px;
+            background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
+            transition: width 1s linear;
+        }
+        
+        /* Glow Badge */
+        .glow-badge {
+            animation: glow-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(124, 58, 237, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.8), 0 0 40px rgba(124, 58, 237, 0.4); }
+        }
+        
+        /* Typewriter Effect */
+        .typewriter {
+            overflow: hidden;
+            border-right: 3px solid #7c3aed;
+            white-space: nowrap;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #7c3aed }
+        }
+        
+        /* Social Icon Hover */
+        .social-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            transform: translateY(-3px) scale(1.1);
+            filter: drop-shadow(0 4px 8px rgba(124, 58, 237, 0.4));
+        }
+        
+        /* Payment Icon Glow */
+        .payment-icon {
+            transition: all 0.3s ease;
+            filter: grayscale(100%);
+            opacity: 0.6;
+        }
+        
+        .payment-icon:hover {
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        
+        /* Stagger Animation Helper */
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        
+        /* Lazy Load Placeholder */
+        .lazy-img {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .lazy-img.loaded {
+            opacity: 1;
+        }
+        
+        /* Dynamic Text Highlight */
+        .highlight-text {
+            background: linear-gradient(120deg, rgba(124, 58, 237, 0.3) 0%, rgba(124, 58, 237, 0.3) 100%);
+            background-repeat: no-repeat;
+            background-size: 0% 100%;
+            background-position: 0 88%;
+            transition: background-size 0.5s ease;
+        }
+        
+        .highlight-text.active {
+            background-size: 100% 100%;
+        }
     </style>
 </head>
 <body class="bg-dark-900 text-white font-sans antialiased">
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="back-to-top" onclick="ui.scrollToTop()">
+        <i data-lucide="arrow-up" class="w-6 h-6 text-white"></i>
+    </button>
+
     <!-- Cart Overlay -->
     <div id="cartOverlay" class="cart-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onclick="cart.close()"></div>
     
+    <!-- Filter Sidebar Overlay -->
+    <div id="filterOverlay" class="cart-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onclick="filters.close()"></div>
+    
+    <!-- Filter Sidebar -->
+    <div id="filterSidebar" class="filter-sidebar fixed left-0 top-0 h-full w-full max-w-sm bg-dark-800 z-50 shadow-2xl overflow-y-auto scrollbar-hide">
+        <div class="p-6 border-b border-white/10 flex items-center justify-between">
+            <h2 class="text-xl font-display font-semibold">Filters</h2>
+            <button onclick="filters.close()" class="p-2 hover:bg-white/10 rounded-full transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-8">
+            <!-- Categories -->
+            <div>
+                <h3 class="font-semibold mb-4">Categories</h3>
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 rounded border-white/20 bg-dark-700 text-accent-purple focus:ring-accent-purple" onchange="filters.toggleCategory('all')">
+                        <span>All Categories</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 rounded border-white/20 bg-dark-700 text-accent-purple focus:ring-accent-purple" onchange="filters.toggleCategory('t-shirts')">
+                        <span>T-Shirts</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 rounded border-white/20 bg-dark-700 text-accent-purple focus:ring-accent-purple" onchange="filters.toggleCategory('hoodies')">
+                        <span>Hoodies</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 rounded border-white/20 bg-dark-700 text-accent-purple focus:ring-accent-purple" onchange="filters.toggleCategory('sneakers')">
+                        <span>Sneakers</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" class="w-5 h-5 rounded border-white/20 bg-dark-700 text-accent-purple focus:ring-accent-purple" onchange="filters.toggleCategory('pants')">
+                        <span>Pants</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Price Range -->
+            <div>
+                <h3 class="font-semibold mb-4">Price Range</h3>
+                <input type="range" id="priceRange" min="0" max="200" value="200" class="price-slider mb-4" oninput="filters.updatePrice(this.value)">
+                <div class="flex justify-between text-sm text-gray-400">
+                    <span>$0</span>
+                    <span id="priceValue">$200</span>
+                </div>
+            </div>
+            
+            <!-- Colors -->
+            <div>
+                <h3 class="font-semibold mb-4">Colors</h3>
+                <div class="flex flex-wrap gap-3">
+                    <button class="color-swatch bg-black border-2 border-gray-600" data-color="Black" onclick="filters.toggleColor('Black')"></button>
+                    <button class="color-swatch bg-white" data-color="White" onclick="filters.toggleColor('White')"></button>
+                    <button class="color-swatch bg-gray-500" data-color="Gray" onclick="filters.toggleColor('Gray')"></button>
+                    <button class="color-swatch bg-blue-600" data-color="Blue" onclick="filters.toggleColor('Blue')"></button>
+                    <button class="color-swatch bg-red-500" data-color="Red" onclick="filters.toggleColor('Red')"></button>
+                    <button class="color-swatch bg-green-600" data-color="Green" onclick="filters.toggleColor('Green')"></button>
+                </div>
+            </div>
+            
+            <!-- Sizes -->
+            <div>
+                <h3 class="font-semibold mb-4">Sizes</h3>
+                <div class="flex flex-wrap gap-2">
+                    <button class="size-btn" data-size="S" onclick="filters.toggleSize('S')">S</button>
+                    <button class="size-btn" data-size="M" onclick="filters.toggleSize('M')">M</button>
+                    <button class="size-btn" data-size="L" onclick="filters.toggleSize('L')">L</button>
+                    <button class="size-btn" data-size="XL" onclick="filters.toggleSize('XL')">XL</button>
+                    <button class="size-btn" data-size="XXL" onclick="filters.toggleSize('XXL')">XXL</button>
+                </div>
+            </div>
+        </div>
+        <div class="p-6 border-t border-white/10 space-y-3">
+            <button onclick="filters.apply()" class="btn-gradient w-full py-3 rounded-full font-semibold">
+                Apply Filters
+            </button>
+            <button onclick="filters.reset()" class="w-full py-3 text-gray-400 hover:text-white transition-colors border border-white/20 rounded-full">
+                Reset All
+            </button>
+        </div>
+    </div>
+    
     <!-- Slide Cart -->
     <div id="slideCart" class="slide-cart fixed right-0 top-0 h-full w-full max-w-md bg-dark-800 z-50 shadow-2xl">
+        <div id="cartTimerBar" class="cart-timer-bar w-full"></div>
         <div class="flex flex-col h-full">
             <div class="flex items-center justify-between p-6 border-b border-white/10">
                 <h2 class="text-xl font-display font-semibold">Your Cart</h2>
@@ -284,11 +744,31 @@
                             <span id="wishlistCount" class="absolute -top-1 -right-1 w-5 h-5 bg-accent-purple rounded-full text-xs flex items-center justify-center hidden">0</span>
                         </a>
                         
-                        <!-- Cart -->
-                        <button onclick="cart.open()" class="p-2 hover:bg-white/10 rounded-full transition-colors relative">
-                            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-                            <span id="cartCount" class="absolute -top-1 -right-1 w-5 h-5 bg-accent-purple rounded-full text-xs flex items-center justify-center hidden">0</span>
-                        </button>
+                        <!-- Cart with Preview -->
+                        <div class="relative" id="cartContainer" onmouseenter="ui.showCartPreview()" onmouseleave="ui.hideCartPreview()">
+                            <button onclick="cart.open()" class="p-2 hover:bg-white/10 rounded-full transition-colors relative">
+                                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                                <span id="cartCount" class="absolute -top-1 -right-1 w-5 h-5 bg-accent-purple rounded-full text-xs flex items-center justify-center hidden">0</span>
+                            </button>
+                            <!-- Cart Preview Dropdown -->
+                            <div id="cartPreview" class="cart-preview absolute top-full right-0 mt-2 w-80 bg-dark-800 rounded-2xl shadow-2xl border border-white/10 z-50 overflow-hidden">
+                                <div class="p-4 border-b border-white/10">
+                                    <h3 class="font-semibold">Cart Preview</h3>
+                                </div>
+                                <div id="cartPreviewItems" class="max-h-64 overflow-y-auto p-4 scrollbar-hide">
+                                    <p class="text-gray-400 text-sm text-center py-4">Your cart is empty</p>
+                                </div>
+                                <div class="p-4 border-t border-white/10 bg-dark-700/30">
+                                    <div class="flex justify-between mb-3">
+                                        <span class="text-gray-400">Subtotal</span>
+                                        <span id="cartPreviewTotal" class="font-semibold">$0.00</span>
+                                    </div>
+                                    <button onclick="cart.open(); ui.hideCartPreview();" class="btn-gradient w-full py-2 rounded-full text-sm font-semibold">
+                                        View Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- Mobile Menu Button -->
                         <button onclick="ui.toggleMobileMenu()" class="md:hidden p-2 hover:bg-white/10 rounded-full transition-colors">
@@ -468,10 +948,14 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12 gap-4">
                     <div>
-                        <h2 class="text-3xl md:text-4xl font-display font-bold mb-2">Featured Products</h2>
-                        <p class="text-gray-400">Handpicked for you</p>
+                        <h2 class="text-3xl md:text-4xl font-display font-bold mb-2" data-aos="fade-right">Featured Products</h2>
+                        <p class="text-gray-400" data-aos="fade-right" data-aos-delay="100">Handpicked for you</p>
                     </div>
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button onclick="filters.open()" class="flex items-center space-x-2 px-4 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-aos="fade-left">
+                            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                            <span class="text-sm font-medium">Filters</span>
+                        </button>
                         <button onclick="products.filter('all')" class="filter-btn active px-4 py-2 rounded-full text-sm font-medium bg-accent-purple text-white transition-colors" data-filter="all">All</button>
                         <button onclick="products.filter('t-shirts')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-dark-700 hover:bg-dark-600 transition-colors" data-filter="t-shirts">T-Shirts</button>
                         <button onclick="products.filter('hoodies')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-dark-700 hover:bg-dark-600 transition-colors" data-filter="hoodies">Hoodies</button>
@@ -516,6 +1000,35 @@
                                 <i data-lucide="arrow-right" class="w-5 h-5"></i>
                             </a>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trending Products Carousel -->
+        <section class="py-20 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-accent-purple/20 border border-accent-purple/30 mb-3">
+                            <i data-lucide="trending-up" class="w-4 h-4 text-accent-purple"></i>
+                            <span class="text-sm text-accent-purple font-medium">Trending Now</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-display font-bold">Hot Products</h2>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="carousel.prev()" class="w-12 h-12 rounded-full bg-dark-700 hover:bg-accent-purple flex items-center justify-center transition-colors">
+                            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                        </button>
+                        <button onclick="carousel.next()" class="w-12 h-12 rounded-full bg-dark-700 hover:bg-accent-purple flex items-center justify-center transition-colors">
+                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="trendingCarousel" class="carousel-container">
+                    <div id="trendingTrack" class="carousel-track carousel-auto">
+                        <!-- Trending items injected here -->
                     </div>
                 </div>
             </div>
@@ -729,6 +1242,8 @@
     <script src="js/cart.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/search.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/carousel.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
