@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUXE | Premium Streetwear</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#0b0b0b',
+                            800: '#141414',
+                            700: '#1a1a1a',
+                            600: '#2a2a2a',
+                        },
+                        accent: {
+                            purple: '#7c3aed',
+                            neon: '#a855f7',
+                            glow: '#c084fc',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Poppins', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 20px rgba(124, 58, 237, 0.3)' },
+                            '50%': { boxShadow: '0 0 40px rgba(124, 58, 237, 0.6)' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            scroll-behavior: smooth;
+        }
+        
+        .glass {
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .glass-light {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-gradient:hover {
+            box-shadow: 0 10px 40px rgba(124, 58, 237, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .product-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(124, 58, 237, 0.2);
+        }
+        
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+        
+        .product-image {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .slide-cart {
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .slide-cart.open {
+            transform: translateX(0);
+        }
+        
+        .cart-overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .cart-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .quick-view-modal {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-view-modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .search-dropdown {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+        
+        .search-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .skeleton {
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .toast {
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .zoom-container {
+            overflow: hidden;
+        }
+        
+        .zoom-image {
+            transition: transform 0.5s ease;
+        }
+        
+        .zoom-container:hover .zoom-image {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body class="bg-dark-900 text-white font-sans antialiased">
+    <!-- Cart Overlay -->
+    <div id="cartOverlay" class="cart-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onclick="cart.close()"></div>
+    
+    <!-- Slide Cart -->
+    <div id="slideCart" class="slide-cart fixed right-0 top-0 h-full w-full max-w-md bg-dark-800 z-50 shadow-2xl">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between p-6 border-b border-white/10">
+                <h2 class="text-xl font-display font-semibold">Your Cart</h2>
+                <button onclick="cart.close()" class="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="cartItems" class="flex-1 overflow-y-auto p-6 scrollbar-hide">
+                <!-- Cart items injected here -->
+            </div>
+            <div class="p-6 border-t border-white/10 space-y-4">
+                <div class="flex justify-between text-lg">
+                    <span class="text-gray-400">Subtotal</span>
+                    <span id="cartSubtotal" class="font-semibold">$0.00</span>
+                </div>
+                <button onclick="cart.checkout()" class="btn-gradient w-full py-4 rounded-full font-semibold text-white">
+                    Checkout
+                </button>
+                <button onclick="cart.close()" class="w-full py-3 text-gray-400 hover:text-white transition-colors">
+                    Continue Shopping
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick View Modal -->
+    <div id="quickViewModal" class="quick-view-modal fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="ui.closeQuickView()"></div>
+        <div class="relative bg-dark-800 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide">
+            <button onclick="ui.closeQuickView()" class="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full z-10">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div id="quickViewContent" class="p-8">
+                <!-- Quick view content injected here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 space-y-3"></div>
+    
+    <!-- Header -->
+    <header id="navbar" class="fixed top-0 left-0 right-0 z-30 transition-all duration-300">
+        <div class="glass">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-20">
+                    <!-- Logo -->
+                    <a href="#" class="flex items-center space-x-2">
+                        <span class="text-2xl font-display font-bold text-gradient">LUXE</span>
+                    </a>
+                    
+                    <!-- Desktop Navigation -->
+                    <nav class="hidden md:flex items-center space-x-8">
+                        <a href="#home" class="text-sm font-medium hover:text-accent-purple transition-colors">Home</a>
+                        <a href="#shop" class="text-sm font-medium hover:text-accent-purple transition-colors">Shop</a>
+                        <a href="#categories" class="text-sm font-medium hover:text-accent-purple transition-colors">Categories</a>
+                        <a href="#new" class="text-sm font-medium hover:text-accent-purple transition-colors">New Arrivals</a>
+                    </nav>
+                    
+                    <!-- Actions -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Search -->
+                        <div class="relative hidden sm:block">
+                            <input 
+                                type="text" 
+                                id="searchInput"
+                                placeholder="Search products..." 
+                                class="bg-dark-700/50 border border-white/10 rounded-full px-4 py-2 pl-10 text-sm w-48 focus:w-64 transition-all focus:outline-none focus:border-accent-purple"
+                            >
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <div id="searchDropdown" class="search-dropdown absolute top-full left-0 right-0 mt-2 bg-dark-800 rounded-xl shadow-2xl border border-white/10 overflow-hidden">
+                                <div id="searchResults" class="max-h-80 overflow-y-auto scrollbar-hide"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Dark Mode Toggle -->
+                        <button onclick="ui.toggleDarkMode()" class="p-2 hover:bg-white/10 rounded-full transition-colors">
+                            <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+                            <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
+                        </button>
+                        
+                        <!-- Wishlist -->
+                        <a href="#wishlist" class="p-2 hover:bg-white/10 rounded-full transition-colors relative">
+                            <i data-lucide="heart" class="w-5 h-5"></i>
+                            <span id="wishlistCount" class="absolute -top-1 -right-1 w-5 h-5 bg-accent-purple rounded-full text-xs flex items-center justify-center hidden">0</span>
+                        </a>
+                        
+                        <!-- Cart -->
+                        <button onclick="cart.open()" class="p-2 hover:bg-white/10 rounded-full transition-colors relative">
+                            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                            <span id="cartCount" class="absolute -top-1 -right-1 w-5 h-5 bg-accent-purple rounded-full text-xs flex items-center justify-center hidden">0</span>
+                        </button>
+                        
+                        <!-- Mobile Menu Button -->
+                        <button onclick="ui.toggleMobileMenu()" class="md:hidden p-2 hover:bg-white/10 rounded-full transition-colors">
+                            <i data-lucide="menu" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden border-t border-white/10">
+                <div class="px-4 py-4 space-y-3">
+                    <a href="#home" class="block py-2 text-sm font-medium hover:text-accent-purple transition-colors">Home</a>
+                    <a href="#shop" class="block py-2 text-sm font-medium hover:text-accent-purple transition-colors">Shop</a>
+                    <a href="#categories" class="block py-2 text-sm font-medium hover:text-accent-purple transition-colors">Categories</a>
+                    <a href="#new" class="block py-2 text-sm font-medium hover:text-accent-purple transition-colors">New Arrivals</a>
+                    <div class="pt-3 border-t border-white/10">
+                        <input 
+                            type="text" 
+                            placeholder="Search products..." 
+                            class="w-full bg-dark-700/50 border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-accent-purple"
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+            <div class="absolute inset-0 z-0">
+                <div class="absolute inset-0 bg-gradient-to-br from-accent-purple/20 via-dark-900 to-dark-900"></div>
+                <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-purple/30 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-neon/20 rounded-full blur-3xl"></div>
+            </div>
+            
+            <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="space-y-8 animate-slide-up">
+                        <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+                            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                            <span class="text-sm text-gray-300">New Collection 2024</span>
+                        </div>
+                        <h1 class="text-5xl md:text-7xl font-display font-bold leading-tight">
+                            Elevate Your<br>
+                            <span class="text-gradient">Street Style</span>
+                        </h1>
+                        <p class="text-lg text-gray-400 max-w-lg">
+                            Discover premium streetwear crafted for the bold. Premium quality meets urban aesthetics.
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <a href="#shop" class="btn-gradient px-8 py-4 rounded-full font-semibold inline-flex items-center space-x-2">
+                                <span>Shop Now</span>
+                                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                            </a>
+                            <a href="#categories" class="px-8 py-4 rounded-full font-semibold border border-white/20 hover:bg-white/5 transition-colors inline-flex items-center space-x-2">
+                                <span>Explore</span>
+                            </a>
+                        </div>
+                        <div class="flex items-center space-x-8 pt-4">
+                            <div>
+                                <div class="text-3xl font-bold text-gradient">50K+</div>
+                                <div class="text-sm text-gray-400">Happy Customers</div>
+                            </div>
+                            <div class="w-px h-12 bg-white/10"></div>
+                            <div>
+                                <div class="text-3xl font-bold text-gradient">10K+</div>
+                                <div class="text-sm text-gray-400">Products</div>
+                            </div>
+                            <div class="w-px h-12 bg-white/10"></div>
+                            <div>
+                                <div class="text-3xl font-bold text-gradient">4.9</div>
+                                <div class="text-sm text-gray-400">Rating</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative animate-fade-in">
+                        <div class="relative rounded-3xl overflow-hidden">
+                            <img 
+                                src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=800&auto=format&fit=crop&q=80" 
+                                alt="Fashion Model"
+                                class="w-full h-[600px] object-cover"
+                            >
+                            <div class="absolute inset-0 bg-gradient-to-t from-dark-900/50 to-transparent"></div>
+                        </div>
+                        <div class="absolute -bottom-6 -left-6 glass p-4 rounded-2xl">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-full bg-accent-purple/20 flex items-center justify-center">
+                                    <i data-lucide="truck" class="w-6 h-6 text-accent-purple"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold">Free Shipping</div>
+                                    <div class="text-sm text-gray-400">On orders over $100</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute -top-6 -right-6 glass p-4 rounded-2xl">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-full bg-accent-purple/20 flex items-center justify-center">
+                                    <i data-lucide="shield-check" class="w-6 h-6 text-accent-purple"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold">Secure Payment</div>
+                                    <div class="text-sm text-gray-400">100% protected</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section id="categories" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-display font-bold mb-4">Shop by Category</h2>
+                    <p class="text-gray-400">Explore our curated collections</p>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <a href="#shop" class="group relative rounded-2xl overflow-hidden aspect-square">
+                        <img 
+                            src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&auto=format&fit=crop&q=80" 
+                            alt="T-Shirts"
+                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        >
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark-900/90 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <h3 class="text-xl font-semibold">T-Shirts</h3>
+                            <p class="text-sm text-gray-400">250+ items</p>
+                        </div>
+                    </a>
+                    <a href="#shop" class="group relative rounded-2xl overflow-hidden aspect-square">
+                        <img 
+                            src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&auto=format&fit=crop&q=80" 
+                            alt="Hoodies"
+                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        >
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark-900/90 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <h3 class="text-xl font-semibold">Hoodies</h3>
+                            <p class="text-sm text-gray-400">180+ items</p>
+                        </div>
+                    </a>
+                    <a href="#shop" class="group relative rounded-2xl overflow-hidden aspect-square">
+                        <img 
+                            src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&auto=format&fit=crop&q=80" 
+                            alt="Sneakers"
+                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        >
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark-900/90 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <h3 class="text-xl font-semibold">Sneakers</h3>
+                            <p class="text-sm text-gray-400">320+ items</p>
+                        </div>
+                    </a>
+                    <a href="#shop" class="group relative rounded-2xl overflow-hidden aspect-square">
+                        <img 
+                            src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&auto=format&fit=crop&q=80" 
+                            alt="Accessories"
+                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        >
+                        <div class="absolute inset-0 bg-gradient-to-t from-dark-900/90 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <h3 class="text-xl font-semibold">Accessories</h3>
+                            <p class="text-sm text-gray-400">150+ items</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Products -->
+        <section id="shop" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12 gap-4">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-display font-bold mb-2">Featured Products</h2>
+                        <p class="text-gray-400">Handpicked for you</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="products.filter('all')" class="filter-btn active px-4 py-2 rounded-full text-sm font-medium bg-accent-purple text-white transition-colors" data-filter="all">All</button>
+                        <button onclick="products.filter('t-shirts')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-dark-700 hover:bg-dark-600 transition-colors" data-filter="t-shirts">T-Shirts</button>
+                        <button onclick="products.filter('hoodies')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-dark-700 hover:bg-dark-600 transition-colors" data-filter="hoodies">Hoodies</button>
+                        <button onclick="products.filter('sneakers')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-dark-700 hover:bg-dark-600 transition-colors" data-filter="sneakers">Sneakers</button>
+                    </div>
+                </div>
+                
+                <!-- Products Grid -->
+                <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Products injected here -->
+                </div>
+                
+                <div class="text-center mt-12">
+                    <button class="px-8 py-4 rounded-full font-semibold border border-white/20 hover:bg-white/5 transition-colors inline-flex items-center space-x-2">
+                        <span>View All Products</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Promo Banner -->
+        <section class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="relative rounded-3xl overflow-hidden">
+                    <img 
+                        src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&auto=format&fit=crop&q=80" 
+                        alt="Sale Banner"
+                        class="w-full h-[400px] object-cover"
+                    >
+                    <div class="absolute inset-0 bg-gradient-to-r from-dark-900/95 via-dark-900/70 to-transparent"></div>
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="max-w-lg p-8 md:p-12">
+                            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 mb-4">
+                                <span class="text-sm text-red-400 font-medium">Limited Time</span>
+                            </div>
+                            <h2 class="text-4xl md:text-5xl font-display font-bold mb-4">Summer Sale</h2>
+                            <p class="text-xl text-gray-300 mb-2">Up to <span class="text-accent-neon font-bold">50% OFF</span></p>
+                            <p class="text-gray-400 mb-8">On selected streetwear items. Don't miss out!</p>
+                            <a href="#shop" class="btn-gradient px-8 py-4 rounded-full font-semibold inline-flex items-center space-x-2">
+                                <span>Shop Sale</span>
+                                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Arrivals -->
+        <section id="new" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-display font-bold mb-4">New Arrivals</h2>
+                    <p class="text-gray-400">Fresh drops just landed</p>
+                </div>
+                <div id="newArrivalsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- New arrivals injected here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="glass p-6 rounded-2xl text-center">
+                        <div class="w-16 h-16 rounded-full bg-accent-purple/20 flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="truck" class="w-8 h-8 text-accent-purple"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2">Free Shipping</h3>
+                        <p class="text-sm text-gray-400">On orders over $100</p>
+                    </div>
+                    <div class="glass p-6 rounded-2xl text-center">
+                        <div class="w-16 h-16 rounded-full bg-accent-purple/20 flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="refresh-cw" class="w-8 h-8 text-accent-purple"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2">Easy Returns</h3>
+                        <p class="text-sm text-gray-400">30-day return policy</p>
+                    </div>
+                    <div class="glass p-6 rounded-2xl text-center">
+                        <div class="w-16 h-16 rounded-full bg-accent-purple/20 flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="shield-check" class="w-8 h-8 text-accent-purple"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2">Secure Payment</h3>
+                        <p class="text-sm text-gray-400">100% secure checkout</p>
+                    </div>
+                    <div class="glass p-6 rounded-2xl text-center">
+                        <div class="w-16 h-16 rounded-full bg-accent-purple/20 flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="headphones" class="w-8 h-8 text-accent-purple"></i>
+                        </div>
+                        <h3 class="font-semibold mb-2">24/7 Support</h3>
+                        <p class="text-sm text-gray-400">Dedicated support team</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-display font-bold mb-4">What Our Customers Say</h2>
+                    <p class="text-gray-400">Real reviews from real customers</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass p-8 rounded-2xl">
+                        <div class="flex items-center space-x-1 mb-4">
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        </div>
+                        <p class="text-gray-300 mb-6">"The quality of these clothes is insane. I've been wearing my hoodie for months and it still looks brand new. Definitely worth every penny!"</p>
+                        <div class="flex items-center space-x-3">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" alt="Customer" class="w-12 h-12 rounded-full object-cover">
+                            <div>
+                                <div class="font-semibold">Marcus Chen</div>
+                                <div class="text-sm text-gray-400">Verified Buyer</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass p-8 rounded-2xl">
+                        <div class="flex items-center space-x-1 mb-4">
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        </div>
+                        <p class="text-gray-300 mb-6">"Fast shipping and amazing packaging. The unboxing experience was premium. The fit is perfect and the designs are unique. Love it!"</p>
+                        <div class="flex items-center space-x-3">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" alt="Customer" class="w-12 h-12 rounded-full object-cover">
+                            <div>
+                                <div class="font-semibold">Sarah Williams</div>
+                                <div class="text-sm text-gray-400">Verified Buyer</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass p-8 rounded-2xl">
+                        <div class="flex items-center space-x-1 mb-4">
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                            <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        </div>
+                        <p class="text-gray-300 mb-6">"Finally found a brand that understands streetwear. The attention to detail is unmatched. Already placed my third order!"</p>
+                        <div class="flex items-center space-x-3">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80" alt="Customer" class="w-12 h-12 rounded-full object-cover">
+                            <div>
+                                <div class="font-semibold">James Rodriguez</div>
+                                <div class="text-sm text-gray-400">Verified Buyer</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter -->
+        <section class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="glass rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-accent-purple/20 rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-0 left-0 w-64 h-64 bg-accent-neon/20 rounded-full blur-3xl"></div>
+                    <div class="relative z-10 max-w-2xl mx-auto">
+                        <h2 class="text-3xl md:text-4xl font-display font-bold mb-4">Join the Movement</h2>
+                        <p class="text-gray-400 mb-8">Subscribe to get exclusive drops, early access to sales, and style tips delivered to your inbox.</p>
+                        <form class="flex flex-col sm:flex-row gap-4" onsubmit="event.preventDefault(); ui.showToast('Thanks for subscribing!');">
+                            <input 
+                                type="email" 
+                                placeholder="Enter your email" 
+                                class="flex-1 bg-dark-900/50 border border-white/10 rounded-full px-6 py-4 focus:outline-none focus:border-accent-purple"
+                            >
+                            <button type="submit" class="btn-gradient px-8 py-4 rounded-full font-semibold whitespace-nowrap">
+                                Subscribe
+                            </button>
+                        </form>
+                        <p class="text-sm text-gray-500 mt-4">No spam, unsubscribe anytime.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <span class="text-2xl font-display font-bold text-gradient">LUXE</span>
+                    <p class="text-gray-400 mt-4 mb-6">Premium streetwear for the bold. Elevate your style with our curated collections.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-dark-700 flex items-center justify-center hover:bg-accent-purple transition-colors">
+                            <i data-lucide="instagram" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-dark-700 flex items-center justify-center hover:bg-accent-purple transition-colors">
+                            <i data-lucide="twitter" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-dark-700 flex items-center justify-center hover:bg-accent-purple transition-colors">
+                            <i data-lucide="facebook" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Shop</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">All Products</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">New Arrivals</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Best Sellers</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Sale</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Help</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Shipping</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Returns</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Contact</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li class="flex items-center space-x-3">
+                            <i data-lucide="mail" class="w-5 h-5"></i>
+                            <span>hello@luxe.com</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <i data-lucide="phone" class="w-5 h-5"></i>
+                            <span>+1 (555) 123-4567</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <i data-lucide="map-pin" class="w-5 h-5"></i>
+                            <span>New York, NY 10001</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-gray-400 text-sm">2024 LUXE. All rights reserved.</p>
+                <div class="flex items-center space-x-6 text-sm text-gray-400">
+                    <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Modules -->
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
