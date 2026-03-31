@@ -149,7 +149,7 @@
                     <div class="bg-[#141414] rounded-2xl p-6">
                         <div class="flex items-center justify-between mb-6">
                             <h3 class="text-xl font-semibold">Recent Orders</h3>
-                            <button onclick="admin.showSection('orders')" class="text-[#7c3aed] hover:underline text-sm">View All</button>
+                            <button onclick="showSection('orders')" class="text-[#7c3aed] hover:underline text-sm">View All</button>
                         </div>
                         <div id="recentOrdersTable" class="overflow-x-auto">
                             <table class="w-full">
@@ -174,7 +174,7 @@
                 <section id="productsSection" class="admin-section hidden">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-2xl font-display font-semibold">Products</h2>
-                        <button onclick="admin.openProductModal()" class="btn-gradient px-6 py-3 rounded-full font-semibold flex items-center space-x-2">
+                        <button onclick="openProductModal()" class="btn-gradient px-6 py-3 rounded-full font-semibold flex items-center space-x-2">
                             <i data-lucide="plus" class="w-5 h-5"></i>
                             <span>Add Product</span>
                         </button>
@@ -205,7 +205,7 @@
                     <h2 class="text-2xl font-display font-semibold mb-6">All Orders</h2>
                     <div class="bg-[#141414] rounded-2xl p-6">
                         <div class="flex items-center space-x-4 mb-6">
-                            <select id="orderStatusFilter" onchange="admin.filterOrders()" class="bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-2">
+                            <select id="orderStatusFilter" onchange="filterOrders()" class="bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-2">
                                 <option value="all">All Status</option>
                                 <option value="pending">Pending</option>
                                 <option value="processing">Processing</option>
@@ -352,7 +352,7 @@
                     </label>
                 </div>
                 <div class="flex justify-end space-x-4 pt-4">
-                    <button type="button" onclick="admin.closeProductModal()" class="px-6 py-3 border border-white/20 rounded-lg hover:bg-white/5">
+                    <button type="button" onclick="closeProductModal()" class="px-6 py-3 border border-white/20 rounded-lg hover:bg-white/5">
                         Cancel
                     </button>
                     <button type="submit" class="btn-gradient px-6 py-3 rounded-lg font-semibold">
@@ -363,12 +363,21 @@
         </div>
     </div>
 
-    <!-- JavaScript -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, deleteDoc, updateDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <!-- Loading Overlay -->
+    <div id="adminLoading" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center hidden">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-[#7c3aed] border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-gray-400">Loading...</p>
+        </div>
+    </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCrY9kwRv3wVyA1qnPBU5HEAwjqQKqLPOw",
             authDomain: "luxe-92795.firebaseapp.com",
@@ -379,357 +388,392 @@
             measurementId: "G-9F8DNLY55V"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-        // Admin module
-        const admin = {
-            currentUser: null,
-            products: [],
-            orders: [],
-
-            async init() {
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        // Check if user is admin
-                        const userDoc = await getDoc(doc(db, 'users', user.uid));
-                        if (userDoc.exists() && userDoc.data().isAdmin) {
-                            this.currentUser = user;
-                            this.showDashboard();
-                            this.loadData();
-                        } else {
-                            await signOut(auth);
-                            this.showLoginError('Access denied. Admin only.');
-                        }
-                    } else {
-                        this.showLogin();
-                    }
-                });
-
-                // Login form
-                document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const email = document.getElementById('adminEmail').value;
-                    const password = document.getElementById('adminPassword').value;
-                    try {
-                        await signInWithEmailAndPassword(auth, email, password);
-                    } catch (error) {
-                        this.showLoginError(error.message);
-                    }
-                });
-
-                // Product form
-                document.getElementById('productForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    await this.saveProduct();
-                });
-
-                lucide.createIcons();
-            },
-
-            showLogin() {
-                document.getElementById('adminLoginOverlay').classList.remove('hidden');
-                document.getElementById('adminDashboard').classList.add('hidden');
-            },
-
-            showDashboard() {
-                document.getElementById('adminLoginOverlay').classList.add('hidden');
-                document.getElementById('adminDashboard').classList.remove('hidden');
-                document.getElementById('adminUserEmail').textContent = this.currentUser.email;
-            },
-
-            showLoginError(message) {
-                const errorEl = document.getElementById('adminLoginError');
-                errorEl.textContent = message;
-                errorEl.classList.remove('hidden');
-            },
-
-            async logout() {
-                await signOut(auth);
-            },
-
-            async loadData() {
-                await Promise.all([
-                    this.loadStats(),
-                    this.loadProducts(),
-                    this.loadOrders(),
-                    this.loadCustomers()
-                ]);
-            },
-
-            async loadStats() {
-                // Load stats from Firestore
-                const ordersSnapshot = await getDocs(collection(db, 'orders'));
-                let totalRevenue = 0;
-                let totalOrders = ordersSnapshot.size;
-                
-                ordersSnapshot.forEach(doc => {
-                    const order = doc.data();
-                    if (order.status !== 'cancelled') {
-                        totalRevenue += order.total || 0;
-                    }
-                });
-
-                const productsSnapshot = await getDocs(collection(db, 'products'));
-                
-                document.getElementById('totalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
-                document.getElementById('totalOrders').textContent = totalOrders;
-                document.getElementById('totalProducts').textContent = productsSnapshot.size;
-            },
-
-            async loadProducts() {
-                const snapshot = await getDocs(collection(db, 'products'));
-                this.products = [];
-                const tbody = document.getElementById('productsBody');
-                tbody.innerHTML = '';
-
-                snapshot.forEach(doc => {
-                    const product = { id: doc.id, ...doc.data() };
-                    this.products.push(product);
-                    
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b border-white/5';
-                    tr.innerHTML = `
-                        <td class="py-4"><img src="${product.image}" alt="${product.name}" class="w-16 h-16 rounded-lg object-cover"></td>
-                        <td class="py-4">${product.name}</td>
-                        <td class="py-4 capitalize">${product.category}</td>
-                        <td class="py-4">$${product.price} ${product.isSale ? `<span class="text-red-400">$${product.salePrice}</span>` : ''}</td>
-                        <td class="py-4">${product.stock || 'N/A'}</td>
-                        <td class="py-4">
-                            <button onclick="admin.editProduct('${product.id}')" class="text-[#7c3aed] hover:underline mr-2">Edit</button>
-                            <button onclick="admin.deleteProduct('${product.id}')" class="text-red-400 hover:underline">Delete</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-
-                // Update inventory table too
-                this.updateInventoryTable();
-            },
-
-            updateInventoryTable() {
-                const tbody = document.getElementById('inventoryBody');
-                tbody.innerHTML = '';
-
-                this.products.forEach(product => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b border-white/5';
-                    const stock = product.stock || 0;
-                    const lowStock = stock < 10;
-                    
-                    tr.innerHTML = `
-                        <td class="py-4">${product.name}</td>
-                        <td class="py-4 ${lowStock ? 'text-red-400' : ''}">${stock}</td>
-                        <td class="py-4">${lowStock ? '⚠️ Low Stock' : '✅ OK'}</td>
-                        <td class="py-4">
-                            <button onclick="admin.updateStock('${product.id}', ${stock + 10})" class="text-green-400 hover:underline mr-2">+10</button>
-                            <button onclick="admin.updateStock('${product.id}', ${Math.max(0, stock - 10)})" class="text-red-400 hover:underline">-10</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            },
-
-            async loadOrders() {
-                const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(50));
-                const snapshot = await getDocs(q);
-                this.orders = [];
-                
-                const recentTbody = document.getElementById('recentOrdersBody');
-                const allTbody = document.getElementById('allOrdersBody');
-                recentTbody.innerHTML = '';
-                allTbody.innerHTML = '';
-
-                let count = 0;
-                snapshot.forEach(doc => {
-                    const order = { id: doc.id, ...doc.data() };
-                    this.orders.push(order);
-                    
-                    const statusColors = {
-                        pending: 'text-yellow-400',
-                        processing: 'text-blue-400',
-                        shipped: 'text-purple-400',
-                        delivered: 'text-green-400',
-                        cancelled: 'text-red-400'
-                    };
-
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b border-white/5';
-                    tr.innerHTML = `
-                        <td class="py-4">#${order.id.slice(-6)}</td>
-                        <td class="py-4">${order.shippingAddress?.email || 'N/A'}</td>
-                        <td class="py-4">$${order.total?.toFixed(2) || '0.00'}</td>
-                        <td class="py-4 capitalize ${statusColors[order.status] || 'text-gray-400'}">${order.status}</td>
-                        <td class="py-4">${order.createdAt?.toDate().toLocaleDateString() || 'N/A'}</td>
-                    `;
-                    
-                    if (count < 5) {
-                        recentTbody.appendChild(tr.cloneNode(true));
-                    }
-                    
-                    const actionTr = document.createElement('tr');
-                    actionTr.className = 'border-b border-white/5';
-                    actionTr.innerHTML = tr.innerHTML + `
-                        <td class="py-4">
-                            <select onchange="admin.updateOrderStatus('${order.id}', this.value)" class="bg-[#1a1a1a] border border-white/10 rounded px-2 py-1 text-sm">
-                                <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
-                                <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
-                                <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
-                                <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
-                                <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                            </select>
-                        </td>
-                    `;
-                    allTbody.appendChild(actionTr);
-                    
-                    count++;
-                });
-            },
-
-            async loadCustomers() {
-                const snapshot = await getDocs(collection(db, 'users'));
-                const tbody = document.getElementById('customersBody');
-                tbody.innerHTML = '';
-
-                snapshot.forEach(doc => {
-                    const user = doc.data();
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b border-white/5';
-                    tr.innerHTML = `
-                        <td class="py-4">${user.email}</td>
-                        <td class="py-4">${user.displayName || 'N/A'}</td>
-                        <td class="py-4">${user.orderCount || 0}</td>
-                        <td class="py-4">$${(user.totalSpent || 0).toFixed(2)}</td>
-                        <td class="py-4">${user.createdAt?.toDate().toLocaleDateString() || 'N/A'}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-                
-                document.getElementById('totalCustomers').textContent = snapshot.size;
-            },
-
-            showSection(section) {
-                document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
-                document.getElementById(section + 'Section').classList.remove('hidden');
-                
-                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-                event.target.closest('.sidebar-link').classList.add('active');
-            },
-
-            openProductModal(productId = null) {
-                document.getElementById('productModal').classList.remove('hidden');
-                document.getElementById('productModalTitle').textContent = productId ? 'Edit Product' : 'Add Product';
-                document.getElementById('productId').value = productId || '';
-                
-                if (productId) {
-                    const product = this.products.find(p => p.id === productId);
-                    if (product) {
-                        document.getElementById('productName').value = product.name;
-                        document.getElementById('productCategory').value = product.category;
-                        document.getElementById('productPrice').value = product.price;
-                        document.getElementById('productSalePrice').value = product.salePrice || '';
-                        document.getElementById('productStock').value = product.stock || 0;
-                        document.getElementById('productImage').value = product.image;
-                        document.getElementById('productDescription').value = product.description;
-                        document.getElementById('productIsNew').checked = product.isNew;
-                        document.getElementById('productIsSale').checked = product.isSale;
-                    }
-                } else {
-                    document.getElementById('productForm').reset();
-                }
-            },
-
-            closeProductModal() {
-                document.getElementById('productModal').classList.add('hidden');
-            },
-
-            async saveProduct() {
-                const id = document.getElementById('productId').value;
-                const productData = {
-                    name: document.getElementById('productName').value,
-                    category: document.getElementById('productCategory').value,
-                    price: parseFloat(document.getElementById('productPrice').value),
-                    salePrice: parseFloat(document.getElementById('productSalePrice').value) || null,
-                    stock: parseInt(document.getElementById('productStock').value),
-                    image: document.getElementById('productImage').value,
-                    description: document.getElementById('productDescription').value,
-                    isNew: document.getElementById('productIsNew').checked,
-                    isSale: document.getElementById('productIsSale').checked,
-                    updatedAt: new Date()
-                };
-
-                if (!id) {
-                    productData.createdAt = new Date();
-                    productData.rating = 0;
-                    productData.reviews = 0;
-                }
-
-                try {
-                    await setDoc(doc(db, 'products', id || Date.now().toString()), productData);
-                    this.closeProductModal();
-                    await this.loadProducts();
-                    alert('Product saved successfully!');
-                } catch (error) {
-                    alert('Error saving product: ' + error.message);
-                }
-            },
-
-            editProduct(id) {
-                this.openProductModal(id);
-            },
-
-            async deleteProduct(id) {
-                if (confirm('Are you sure you want to delete this product?')) {
-                    try {
-                        await deleteDoc(doc(db, 'products', id));
-                        await this.loadProducts();
-                    } catch (error) {
-                        alert('Error deleting product: ' + error.message);
-                    }
-                }
-            },
-
-            async updateStock(productId, newStock) {
-                try {
-                    await updateDoc(doc(db, 'products', productId), { stock: newStock });
-                    await this.loadProducts();
-                } catch (error) {
-                    alert('Error updating stock: ' + error.message);
-                }
-            },
-
-            async updateOrderStatus(orderId, status) {
-                try {
-                    await updateDoc(doc(db, 'orders', orderId), { status: status });
-                    await this.loadOrders();
-                } catch (error) {
-                    alert('Error updating order: ' + error.message);
-                }
-            },
-
-            filterOrders() {
-                const filter = document.getElementById('orderStatusFilter').value;
-                const rows = document.getElementById('allOrdersBody').querySelectorAll('tr');
-                
-                rows.forEach(row => {
-                    const status = row.querySelector('select')?.value;
-                    if (filter === 'all' || status === filter) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            }
-        };
-
-        // Make admin global for onclick handlers
-        window.admin = admin;
+        // Global state
+        let currentUser = null;
+        let products = [];
+        let orders = [];
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            admin.init();
+            lucide.createIcons();
+            initAuth();
         });
+
+        // Auth
+        function initAuth() {
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    // Check if admin
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists && userDoc.data().isAdmin) {
+                        currentUser = user;
+                        showDashboard();
+                        loadData();
+                    } else {
+                        await auth.signOut();
+                        showLoginError('Access denied. Admin only.');
+                    }
+                } else {
+                    showLogin();
+                }
+            });
+
+            // Login form
+            document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('adminEmail').value;
+                const password = document.getElementById('adminPassword').value;
+                
+                try {
+                    await auth.signInWithEmailAndPassword(email, password);
+                } catch (error) {
+                    showLoginError(error.message);
+                }
+            });
+
+            // Product form
+            document.getElementById('productForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await saveProduct();
+            });
+        }
+
+        function showLogin() {
+            document.getElementById('adminLoginOverlay').classList.remove('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('adminLoginOverlay').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            document.getElementById('adminUserEmail').textContent = currentUser.email;
+            lucide.createIcons();
+        }
+
+        function showLoginError(message) {
+            const errorEl = document.getElementById('adminLoginError');
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+        }
+
+        async function adminLogout() {
+            await auth.signOut();
+        }
+
+        // Load all data
+        async function loadData() {
+            showLoading(true);
+            await Promise.all([
+                loadStats(),
+                loadProducts(),
+                loadOrders(),
+                loadCustomers()
+            ]);
+            showLoading(false);
+        }
+
+        function showLoading(show) {
+            document.getElementById('adminLoading').classList.toggle('hidden', !show);
+        }
+
+        // Stats
+        async function loadStats() {
+            const ordersSnapshot = await db.collection('orders').get();
+            let totalRevenue = 0;
+            
+            ordersSnapshot.forEach(doc => {
+                const order = doc.data();
+                if (order.status !== 'cancelled') {
+                    totalRevenue += order.total || 0;
+                }
+            });
+
+            const productsSnapshot = await db.collection('products').get();
+            const usersSnapshot = await db.collection('users').get();
+            
+            document.getElementById('totalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
+            document.getElementById('totalOrders').textContent = ordersSnapshot.size;
+            document.getElementById('totalProducts').textContent = productsSnapshot.size;
+            document.getElementById('totalCustomers').textContent = usersSnapshot.size;
+        }
+
+        // Products
+        async function loadProducts() {
+            const snapshot = await db.collection('products').get();
+            products = [];
+            const tbody = document.getElementById('productsBody');
+            tbody.innerHTML = '';
+
+            if (snapshot.empty) {
+                tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-400">No products yet. Add your first product!</td></tr>';
+                return;
+            }
+
+            snapshot.forEach(doc => {
+                const product = { id: doc.id, ...doc.data() };
+                products.push(product);
+                
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-white/5';
+                tr.innerHTML = `
+                    <td class="py-4"><img src="${product.image}" alt="${product.name}" class="w-16 h-16 rounded-lg object-cover"></td>
+                    <td class="py-4">${product.name}</td>
+                    <td class="py-4 capitalize">${product.category}</td>
+                    <td class="py-4">$${product.price} ${product.isSale ? `<span class="text-red-400">$${product.salePrice}</span>` : ''}</td>
+                    <td class="py-4">${product.stock || 'N/A'}</td>
+                    <td class="py-4">
+                        <button onclick="editProduct('${product.id}')" class="text-[#7c3aed] hover:underline mr-2">Edit</button>
+                        <button onclick="deleteProduct('${product.id}')" class="text-red-400 hover:underline">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updateInventoryTable();
+        }
+
+        function updateInventoryTable() {
+            const tbody = document.getElementById('inventoryBody');
+            tbody.innerHTML = '';
+
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-gray-400">No products yet</td></tr>';
+                return;
+            }
+
+            products.forEach(product => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-white/5';
+                const stock = product.stock || 0;
+                const lowStock = stock < 10;
+                
+                tr.innerHTML = `
+                    <td class="py-4">${product.name}</td>
+                    <td class="py-4 ${lowStock ? 'text-red-400' : ''}">${stock}</td>
+                    <td class="py-4">${lowStock ? '⚠️ Low Stock' : '✅ OK'}</td>
+                    <td class="py-4">
+                        <button onclick="updateStock('${product.id}', ${stock + 10})" class="text-green-400 hover:underline mr-2">+10</button>
+                        <button onclick="updateStock('${product.id}', ${Math.max(0, stock - 10)})" class="text-red-400 hover:underline">-10</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function updateStock(productId, newStock) {
+            try {
+                await db.collection('products').doc(productId).update({ stock: newStock });
+                await loadProducts();
+            } catch (error) {
+                alert('Error updating stock: ' + error.message);
+            }
+        }
+
+        function openProductModal(productId = null) {
+            document.getElementById('productModal').classList.remove('hidden');
+            document.getElementById('productModalTitle').textContent = productId ? 'Edit Product' : 'Add Product';
+            document.getElementById('productId').value = productId || '';
+            
+            if (productId) {
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    document.getElementById('productName').value = product.name || '';
+                    document.getElementById('productCategory').value = product.category || 'hoodies';
+                    document.getElementById('productPrice').value = product.price || '';
+                    document.getElementById('productSalePrice').value = product.salePrice || '';
+                    document.getElementById('productStock').value = product.stock || 0;
+                    document.getElementById('productImage').value = product.image || '';
+                    document.getElementById('productDescription').value = product.description || '';
+                    document.getElementById('productIsNew').checked = product.isNew || false;
+                    document.getElementById('productIsSale').checked = product.isSale || false;
+                }
+            } else {
+                document.getElementById('productForm').reset();
+            }
+            lucide.createIcons();
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        async function saveProduct() {
+            const id = document.getElementById('productId').value;
+            const productData = {
+                name: document.getElementById('productName').value,
+                category: document.getElementById('productCategory').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                salePrice: parseFloat(document.getElementById('productSalePrice').value) || null,
+                stock: parseInt(document.getElementById('productStock').value),
+                image: document.getElementById('productImage').value,
+                description: document.getElementById('productDescription').value,
+                isNew: document.getElementById('productIsNew').checked,
+                isSale: document.getElementById('productIsSale').checked,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            if (!id) {
+                productData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                productData.rating = 0;
+                productData.reviews = 0;
+            }
+
+            try {
+                await db.collection('products').doc(id || Date.now().toString()).set(productData);
+                closeProductModal();
+                await loadProducts();
+                alert('Product saved successfully!');
+            } catch (error) {
+                alert('Error saving product: ' + error.message);
+            }
+        }
+
+        function editProduct(id) {
+            openProductModal(id);
+        }
+
+        async function deleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                try {
+                    await db.collection('products').doc(id).delete();
+                    await loadProducts();
+                } catch (error) {
+                    alert('Error deleting product: ' + error.message);
+                }
+            }
+        }
+
+        // Orders
+        async function loadOrders() {
+            const snapshot = await db.collection('orders').orderBy('createdAt', 'desc').limit(50).get();
+            orders = [];
+            
+            const recentTbody = document.getElementById('recentOrdersBody');
+            const allTbody = document.getElementById('allOrdersBody');
+            recentTbody.innerHTML = '';
+            allTbody.innerHTML = '';
+
+            if (snapshot.empty) {
+                recentTbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-400">No orders yet</td></tr>';
+                allTbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-gray-400">No orders yet</td></tr>';
+                return;
+            }
+
+            let count = 0;
+            snapshot.forEach(doc => {
+                const order = { id: doc.id, ...doc.data() };
+                orders.push(order);
+                
+                const statusColors = {
+                    pending: 'text-yellow-400',
+                    processing: 'text-blue-400',
+                    shipped: 'text-purple-400',
+                    delivered: 'text-green-400',
+                    cancelled: 'text-red-400'
+                };
+
+                const createdAt = order.createdAt ? order.createdAt.toDate().toLocaleDateString() : 'N/A';
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-white/5';
+                tr.innerHTML = `
+                    <td class="py-4">#${order.id.slice(-6)}</td>
+                    <td class="py-4">${order.shippingAddress?.email || 'N/A'}</td>
+                    <td class="py-4">$${order.total?.toFixed(2) || '0.00'}</td>
+                    <td class="py-4 capitalize ${statusColors[order.status] || 'text-gray-400'}">${order.status}</td>
+                    <td class="py-4">${createdAt}</td>
+                `;
+                
+                if (count < 5) {
+                    recentTbody.appendChild(tr.cloneNode(true));
+                }
+                
+                const actionTr = document.createElement('tr');
+                actionTr.className = 'border-b border-white/5';
+                actionTr.innerHTML = tr.innerHTML + `
+                    <td class="py-4">${order.items?.length || 0}</td>
+                    <td class="py-4">
+                        <select onchange="updateOrderStatus('${order.id}', this.value)" class="bg-[#1a1a1a] border border-white/10 rounded px-2 py-1 text-sm text-white">
+                            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+                            <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                            <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </td>
+                `;
+                allTbody.appendChild(actionTr);
+                
+                count++;
+            });
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            try {
+                await db.collection('orders').doc(orderId).update({ status: status });
+                await loadOrders();
+            } catch (error) {
+                alert('Error updating order: ' + error.message);
+            }
+        }
+
+        function filterOrders() {
+            const filter = document.getElementById('orderStatusFilter').value;
+            const rows = document.getElementById('allOrdersBody').querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const statusSelect = row.querySelector('select');
+                const status = statusSelect ? statusSelect.value : '';
+                if (filter === 'all' || status === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Customers
+        async function loadCustomers() {
+            const snapshot = await db.collection('users').get();
+            const tbody = document.getElementById('customersBody');
+            tbody.innerHTML = '';
+
+            if (snapshot.empty) {
+                tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-400">No customers yet</td></tr>';
+                return;
+            }
+
+            snapshot.forEach(doc => {
+                const user = doc.data();
+                const createdAt = user.createdAt ? user.createdAt.toDate().toLocaleDateString() : 'N/A';
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-white/5';
+                tr.innerHTML = `
+                    <td class="py-4">${user.email}</td>
+                    <td class="py-4">${user.displayName || 'N/A'}</td>
+                    <td class="py-4">${user.orderCount || 0}</td>
+                    <td class="py-4">$${(user.totalSpent || 0).toFixed(2)}</td>
+                    <td class="py-4">${createdAt}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Navigation
+        function showSection(section) {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(section + 'Section').classList.remove('hidden');
+            
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            document.getElementById('nav-' + section).classList.add('active');
+            
+            lucide.createIcons();
+        }
     </script>
 </body>
 </html>
