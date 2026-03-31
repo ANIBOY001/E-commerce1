@@ -377,32 +377,36 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyCrY9kwRv3wVyA1qnPBU5HEAwjqQKqLPOw",
-            authDomain: "luxe-92795.firebaseapp.com",
-            projectId: "luxe-92795",
-            storageBucket: "luxe-92795.firebasestorage.app",
-            messagingSenderId: "986726380864",
-            appId: "1:986726380864:web:a25c519b05b3cf23b636a5",
-            measurementId: "G-9F8DNLY55V"
+        // Wait for Firebase to load
+        window.onload = function() {
+            initFirebase();
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        function initFirebase() {
+            // Firebase Config
+            const firebaseConfig = {
+                apiKey: "AIzaSyCrY9kwRv3wVyA1qnPBU5HEAwjqQKqLPOw",
+                authDomain: "luxe-92795.firebaseapp.com",
+                projectId: "luxe-92795",
+                storageBucket: "luxe-92795.firebasestorage.app",
+                messagingSenderId: "986726380864",
+                appId: "1:986726380864:web:a25c519b05b3cf23b636a5",
+                measurementId: "G-9F8DNLY55V"
+            };
 
-        // Global state
-        let currentUser = null;
-        let products = [];
-        let orders = [];
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            window.auth = firebase.auth();
+            window.db = firebase.firestore();
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+            // Global state
+            window.currentUser = null;
+            window.products = [];
+            window.orders = [];
+
             lucide.createIcons();
             initAuth();
-        });
+        }
 
         // Auth
         function initAuth() {
