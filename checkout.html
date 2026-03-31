@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | LUXE - Premium Streetwear</title>
+    <meta name="description" content="Secure checkout for your LUXE streetwear order.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0b0b0b; color: white; }
+        .font-display { font-family: 'Poppins', sans-serif; }
+        .btn-gradient { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); }
+        .text-gradient { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .glass { background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-30 glass">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <a href="index.html" class="flex items-center space-x-2">
+                    <span class="text-2xl font-display font-bold text-gradient">LUXE</span>
+                </a>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-400">Secure Checkout</span>
+                    <i data-lucide="lock" class="w-5 h-5 text-green-400"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Checkout -->
+    <main class="pt-28 pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Left Column - Form -->
+                <div class="space-y-8">
+                    <!-- Contact Info -->
+                    <div class="bg-[#141414] rounded-2xl p-6">
+                        <h2 class="text-xl font-display font-semibold mb-6">Contact Information</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Email</label>
+                                <input type="email" id="checkoutEmail" required 
+                                    class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7c3aed]"
+                                    placeholder="your@email.com">
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="newsletter" class="w-4 h-4 rounded border-white/20 bg-[#1a1a1a] text-[#7c3aed]">
+                                <label for="newsletter" class="text-sm text-gray-400">Email me with news and offers</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Address -->
+                    <div class="bg-[#141414] rounded-2xl p-6">
+                        <h2 class="text-xl font-display font-semibold mb-6">Shipping Address</h2>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">First Name</label>
+                                    <input type="text" id="firstName" required
+                                        class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7c3aed]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Last Name</label>
+                                    <input type="text" id="lastName" required
+                                        class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7c3aed]">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Address</label>
+                                <input type="text" id="address" required
+                                    class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7c3aed]"
+                                    placeholder="123 Street Name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Apartment, suite, etc. (optional)</label>
+                                <input type="text" id="apartment"
+                                    class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7c3aed]"
+                                    placeholder="Apt 4B">
+                            </div>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">City</label>
+                                    <input type="text" id="city" required
+                                        class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7c3aed]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">State</label>
+                                    <input type="text" id="state" required
+                                        class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7c3aed]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">ZIP Code</label>
+                                    <input type="text" id="zip" required
+                                        class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7c3aed]">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Country</label>
+                                <select id="country" required
+                                    class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7c3aed]">
+                                    <option value="US">United States</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="UK">United Kingdom</option>
+                                    <option value="AU">Australia</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Phone</label>
+                                <input type="tel" id="phone" required
+                                    class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7c3aed]"
+                                    placeholder="+1 (555) 000-0000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment -->
+                    <div class="bg-[#141414] rounded-2xl p-6">
+                        <h2 class="text-xl font-display font-semibold mb-6">Payment</h2>
+                        <div id="stripeCardElement" class="w-full bg-[#1a1a1a] border border-white/10 rounded-lg p-4 mb-4">
+                            <!-- Stripe Card Element will be mounted here -->
+                        </div>
+                        <p class="text-sm text-gray-400 mb-4">Secure payment powered by Stripe</p>
+                        
+                        <!-- Promo Code -->
+                        <div class="flex space-x-2">
+                            <input type="text" id="promoCode"
+                                class="flex-1 bg-[#1a1a1a] border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7c3aed]"
+                                placeholder="Promo code">
+                            <button onclick="checkout.applyPromo()" 
+                                class="px-6 py-3 border border-white/20 rounded-lg hover:bg-white/5 transition-colors">
+                                Apply
+                            </button>
+                        </div>
+                    </div>
+
+                    <button onclick="checkout.processPayment()" 
+                        class="btn-gradient w-full py-4 rounded-full font-semibold text-white text-lg">
+                        Complete Order
+                    </button>
+                </div>
+
+                <!-- Right Column - Order Summary -->
+                <div class="lg:sticky lg:top-28 h-fit">
+                    <div class="bg-[#141414] rounded-2xl p-6">
+                        <h2 class="text-xl font-display font-semibold mb-6">Order Summary</h2>
+                        <div id="checkoutItems" class="space-y-4 mb-6">
+                            <!-- Items will be injected here -->
+                        </div>
+                        <div class="border-t border-white/10 pt-4 space-y-2">
+                            <div class="flex justify-between text-gray-400">
+                                <span>Subtotal</span>
+                                <span id="checkoutSubtotal">$0.00</span>
+                            </div>
+                            <div class="flex justify-between text-gray-400">
+                                <span>Shipping</span>
+                                <span id="checkoutShipping">Free</span>
+                            </div>
+                            <div class="flex justify-between text-gray-400">
+                                <span>Tax</span>
+                                <span id="checkoutTax">$0.00</span>
+                            </div>
+                            <div id="discountRow" class="flex justify-between text-green-400 hidden">
+                                <span>Discount</span>
+                                <span id="checkoutDiscount">-$0.00</span>
+                            </div>
+                            <div class="flex justify-between text-xl font-semibold pt-4 border-t border-white/10">
+                                <span>Total</span>
+                                <span id="checkoutTotal">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="checkoutLoading" class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center hidden">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-[#7c3aed] border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-gray-400">Processing your order...</p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/checkout.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            checkout.init();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

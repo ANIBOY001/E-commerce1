@@ -14,6 +14,41 @@ const ui = {
         lucide.createIcons();
     },
 
+    // Loading States
+    showLoading(text = 'Loading...') {
+        const overlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        if (overlay) {
+            overlay.classList.remove('hidden');
+            if (loadingText) loadingText.textContent = text;
+        }
+    },
+
+    hideLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.classList.add('hidden');
+    },
+
+    // Error Handling
+    showError(message, duration = 5000) {
+        const container = document.getElementById('errorContainer');
+        if (!container) return;
+
+        const error = document.createElement('div');
+        error.className = 'bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl flex items-center space-x-2';
+        error.innerHTML = `
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+            <span>${message}</span>
+        `;
+
+        container.appendChild(error);
+        lucide.createIcons();
+
+        setTimeout(() => {
+            error.remove();
+        }, duration);
+    },
+
     // Initialize AOS (Animate On Scroll)
     initAOS() {
         if (typeof AOS !== 'undefined') {
@@ -96,6 +131,46 @@ const ui = {
             top: 0,
             behavior: 'smooth'
         });
+    },
+
+    // Auth Modal
+    openAuthModal() {
+        const modal = document.getElementById('authModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    },
+
+    closeAuthModal() {
+        const modal = document.getElementById('authModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    },
+
+    switchAuthTab(tab) {
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const tabs = document.querySelectorAll('.auth-tab');
+
+        tabs.forEach(t => {
+            t.classList.remove('border-accent-purple', 'text-white');
+            t.classList.add('border-transparent', 'text-gray-400');
+        });
+
+        if (tab === 'login') {
+            loginForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+            tabs[0].classList.add('border-accent-purple', 'text-white');
+            tabs[0].classList.remove('border-transparent', 'text-gray-400');
+        } else {
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+            tabs[1].classList.add('border-accent-purple', 'text-white');
+            tabs[1].classList.remove('border-transparent', 'text-gray-400');
+        }
     },
 
     // Cart Preview Dropdown

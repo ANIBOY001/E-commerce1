@@ -345,11 +345,12 @@ const products = {
     }
 };
 
-// Wishlist functionality
+// Wishlist functionality with Firestore Sync
 const wishlist = {
     items: JSON.parse(localStorage.getItem('luxe_wishlist') || '[]'),
+    isSyncing: false,
 
-    toggle(id) {
+    async toggle(id) {
         const index = this.items.indexOf(id);
         if (index > -1) {
             this.items.splice(index, 1);
@@ -360,6 +361,7 @@ const wishlist = {
         }
         this.save();
         this.updateCount();
+        await this.syncToFirestore();
     },
 
     isInWishlist(id) {
@@ -375,6 +377,38 @@ const wishlist = {
         if (count) {
             count.textContent = this.items.length;
             count.classList.toggle('hidden', this.items.length === 0);
+        }
+    },
+
+    // Sync to Firestore
+    async syncToFirestore() {
+        const userId = firebaseApp.getCurrentUserId();
+        if (!userId || this.isSyncing) return;
+
+        this.isSyncing = true;
+        try {
+            await dbHelpers.saveWishlist(userId, this.items);
+        } catch (error) {
+            console.error('Error syncing wishlist:', error);
+        } finally {
+            this.isSyncing = false;
+        }
+    },
+
+    // Load from Firestore
+    async syncFromFirestore() {
+        const userId = firebaseApp.getCurrentUserId();
+        if (!userId) return;
+
+        try {
+            const firestoreWishlist = await dbHelpers.getWishlist(userId);
+            if (firestoreWishlist && firestoreWishlist.length > 0) {
+                this.items = firestoreWishlist;
+                this.save();
+                this.updateCount();
+            }
+        } catch (error) {
+            console.error('Error loading wishlist:', error);
         }
     },
 

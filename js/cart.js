@@ -1,8 +1,9 @@
-// Cart System
+// Cart System with Firestore Sync
 const cart = {
     items: JSON.parse(localStorage.getItem('luxe_cart') || '[]'),
     autoHideTimer: null,
     autoHideDuration: 10000, // 10 seconds
+    isSyncing: false,
 
     init() {
         this.updateCount();
@@ -20,9 +21,15 @@ const cart = {
         }
     },
 
-    addItem(productId, quantity = 1, size = null, color = null) {
+    async addItem(productId, quantity = 1, size = null, color = null) {
         const product = products.getById(productId);
         if (!product) return;
+
+        // Check stock
+        if (product.stock !== undefined && product.stock < quantity) {
+            ui.showToast(`Only ${product.stock} items left in stock!`);
+            return;
+        }
 
         const existingItem = this.items.find(item => 
             item.id === productId && 
@@ -45,31 +52,85 @@ const cart = {
         this.save();
         this.updateCount();
         this.render();
+        
+        // Sync to Firestore if logged in
+        await this.syncToFirestore();
+        
         ui.showToast(`${product.name} added to cart`);
+        
+        // Open cart drawer
+        this.open();
     },
 
-    removeItem(index) {
+    async removeItem(index) {
         this.items.splice(index, 1);
         this.save();
         this.updateCount();
         this.render();
+        await this.syncToFirestore();
     },
 
-    updateQuantity(index, quantity) {
+    async updateQuantity(index, quantity) {
         if (quantity <= 0) {
             this.removeItem(index);
             return;
         }
+
+        const item = this.items[index];
+        const product = products.getById(item.id);
+        
+        // Check stock limit
+        if (product && product.stock !== undefined && quantity > product.stock) {
+            ui.showToast(`Only ${product.stock} items available`);
+            return;
+        }
+
         this.items[index].quantity = quantity;
         this.save();
         this.render();
+        await this.syncToFirestore();
     },
 
-    clear() {
+    async clear() {
         this.items = [];
         this.save();
         this.updateCount();
         this.render();
+        await this.syncToFirestore();
+    },
+
+    // Sync to Firestore
+    async syncToFirestore() {
+        const userId = firebaseApp.getCurrentUserId();
+        if (!userId || this.isSyncing) return;
+
+        this.isSyncing = true;
+        try {
+            await dbHelpers.saveCart(userId, this.items);
+        } catch (error) {
+            console.error('Error syncing cart:', error);
+        } finally {
+            this.isSyncing = false;
+        }
+    },
+
+    // Load from Firestore
+    async syncFromFirestore() {
+        const userId = firebaseApp.getCurrentUserId();
+        if (!userId) return;
+
+        try {
+            const firestoreCart = await dbHelpers.getCart(userId);
+            if (firestoreCart && firestoreCart.length > 0) {
+                // Merge with local cart
+                this.items = firestoreCart;
+                this.save();
+                this.updateCount();
+                this.render();
+            }
+        } catch (error) {
+            console.error('Error loading cart:', error);
+        }
     },
 
     getTotal() {
@@ -249,18 +310,20 @@ const cart = {
         }
     },
 
-    checkout() {
+    async checkout() {
         if (this.items.length === 0) {
             ui.showToast('Your cart is empty');
             return;
         }
-        
-        // Simulate checkout
-        ui.showToast('Proceeding to checkout...');
-        setTimeout(() => {
-            this.clear();
-            this.close();
-            alert('Thank you for your order! This is a demo checkout.');
-        }, 1000);
+
+        // Check if user is logged in
+        if (!firebaseApp.isLoggedIn()) {
+            ui.showToast('Please sign in to checkout');
+            ui.openAuthModal();
+            return;
+        }
+
+        // Navigate to checkout page
+        window.location.href = 'checkout.html';
     }
 };
