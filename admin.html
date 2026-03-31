@@ -377,12 +377,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // Wait for Firebase to load
-        window.onload = function() {
-            initFirebase();
-        };
-
-        function initFirebase() {
+        // Check if Firebase loaded
+        if (typeof firebase === 'undefined') {
+            console.error('Firebase SDK failed to load');
+            document.getElementById('adminLoginError').textContent = 'Failed to load Firebase. Please check your internet connection and refresh.';
+            document.getElementById('adminLoginError').classList.remove('hidden');
+        } else {
             // Firebase Config
             const firebaseConfig = {
                 apiKey: "AIzaSyCrY9kwRv3wVyA1qnPBU5HEAwjqQKqLPOw",
@@ -396,55 +396,64 @@
 
             // Initialize Firebase
             firebase.initializeApp(firebaseConfig);
-            window.auth = firebase.auth();
-            window.db = firebase.firestore();
+            const auth = firebase.auth();
+            const db = firebase.firestore();
 
             // Global state
-            window.currentUser = null;
-            window.products = [];
-            window.orders = [];
+            let currentUser = null;
+            let products = [];
+            let orders = [];
 
-            lucide.createIcons();
-            initAuth();
-        }
+            // Initialize when DOM is ready
+            document.addEventListener('DOMContentLoaded', () => {
+                lucide.createIcons();
+                initAuth();
+            });
 
-        // Auth
-        function initAuth() {
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    // Check if admin
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (userDoc.exists && userDoc.data().isAdmin) {
-                        currentUser = user;
-                        showDashboard();
-                        loadData();
+            // Auth
+            function initAuth() {
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        try {
+                            // Check if admin
+                            const userDoc = await db.collection('users').doc(user.uid).get();
+                            if (userDoc.exists && userDoc.data().isAdmin) {
+                                currentUser = user;
+                                showDashboard();
+                                loadData();
+                            } else {
+                                await auth.signOut();
+                                showLoginError('Access denied. Admin only.');
+                            }
+                        } catch (error) {
+                            console.error('Error checking admin status:', error);
+                            showLoginError('Error connecting to database. Please try again.');
+                        }
                     } else {
-                        await auth.signOut();
-                        showLoginError('Access denied. Admin only.');
+                        showLogin();
                     }
-                } else {
-                    showLogin();
-                }
-            });
+                });
 
-            // Login form
-            document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('adminEmail').value;
-                const password = document.getElementById('adminPassword').value;
-                
-                try {
-                    await auth.signInWithEmailAndPassword(email, password);
-                } catch (error) {
-                    showLoginError(error.message);
-                }
-            });
+                // Login form
+                document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('adminEmail').value;
+                    const password = document.getElementById('adminPassword').value;
+                    
+                    try {
+                        await auth.signInWithEmailAndPassword(email, password);
+                    } catch (error) {
+                        console.error('Login error:', error);
+                        showLoginError(error.message);
+                    }
+                });
 
-            // Product form
-            document.getElementById('productForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await saveProduct();
-            });
+                // Product form
+                document.getElementById('productForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await saveProduct();
+                });
+            }
         }
 
         function showLogin() {
