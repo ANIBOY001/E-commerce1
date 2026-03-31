@@ -25,6 +25,10 @@ const app = {
         // Initialize lazy loading for images
         this.initLazyLoading();
 
+        // Render personalized sections
+        products.renderRecentlyViewed();
+        this.renderRecommendations();
+
         console.log('LUXE E-commerce with advanced UI initialized successfully');
     },
 
@@ -43,6 +47,30 @@ const app = {
         });
 
         images.forEach(img => imageObserver.observe(img));
+    },
+
+    renderRecommendations() {
+        const container = document.getElementById('recommendationsGrid');
+        if (!container) return;
+
+        // Get recently viewed products for personalization
+        const recentlyViewed = products.getRecentlyViewed();
+        
+        let recommendations = [];
+        
+        if (recentlyViewed.length > 0) {
+            // Get recommendations based on most recent view
+            recommendations = products.getRecommendations(recentlyViewed[0].id);
+        }
+        
+        // Fallback to trending products if no recommendations
+        if (recommendations.length === 0) {
+            recommendations = products.data
+                .filter(p => p.rating >= 4.8)
+                .slice(0, 4);
+        }
+
+        container.innerHTML = recommendations.map(p => products.createProductCard(p)).join('');
     }
 };
 

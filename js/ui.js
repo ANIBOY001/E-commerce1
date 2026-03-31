@@ -8,6 +8,7 @@ const ui = {
         this.initParallax();
         this.initSmartNavbar();
         this.initBackToTop();
+        this.initScrollProgress();
         this.initSmoothScroll();
         this.initNewsletterScrollTrigger();
         lucide.createIcons();
@@ -23,6 +24,19 @@ const ui = {
                 easing: 'ease-out-cubic'
             });
         }
+    },
+
+    // Scroll Progress Indicator
+    initScrollProgress() {
+        const progressBar = document.getElementById('scrollProgress');
+        if (!progressBar) return;
+
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            progressBar.style.width = scrollPercent + '%';
+        });
     },
 
     // Parallax Hero Effect

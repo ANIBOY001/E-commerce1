@@ -559,9 +559,85 @@
         .highlight-text.active {
             background-size: 100% 100%;
         }
+        /* Mobile-first enhancements */
+        @media (max-width: 768px) {
+            .mobile-touch-target {
+                min-width: 44px;
+                min-height: 44px;
+            }
+            
+            .mobile-full-width {
+                width: 100%;
+            }
+            
+            .mobile-stack {
+                flex-direction: column;
+            }
+            
+            .product-card {
+                touch-action: manipulation;
+            }
+            
+            /* Prevent text zoom on focus for iOS */
+            input, select, textarea {
+                font-size: 16px;
+            }
+        }
+        
+        /* Scroll Progress Indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
+            z-index: 100;
+            transition: width 0.1s ease-out;
+        }
+        
+        /* Mobile Navigation Improvements */
+        @media (max-width: 768px) {
+            #mobileMenu {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(11, 11, 11, 0.98);
+                z-index: 50;
+                padding-top: 80px;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            #mobileMenu.open {
+                transform: translateX(0);
+            }
+            
+            #mobileMenu a {
+                font-size: 1.25rem;
+                padding: 1rem 1.5rem;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+        }
+        
+        /* Collapsible filters for mobile */
+        .filter-collapsible {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .filter-collapsible.open {
+            max-height: 500px;
+        }
     </style>
 </head>
 <body class="bg-dark-900 text-white font-sans antialiased">
+    <!-- Scroll Progress Indicator -->
+    <div id="scrollProgress" class="scroll-progress"></div>
+
     <!-- Back to Top Button -->
     <button id="backToTop" class="back-to-top" onclick="ui.scrollToTop()">
         <i data-lucide="arrow-up" class="w-6 h-6 text-white"></i>
@@ -1043,6 +1119,44 @@
                 </div>
                 <div id="newArrivalsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- New arrivals injected here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Recently Viewed (Hidden by default, shown when user views products) -->
+        <section id="recentlyViewedSection" class="py-20 hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between mb-12">
+                    <div>
+                        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-accent-purple/20 border border-accent-purple/30 mb-3">
+                            <i data-lucide="history" class="w-4 h-4 text-accent-purple"></i>
+                            <span class="text-sm text-accent-purple font-medium">Your History</span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-display font-bold">Recently Viewed</h2>
+                    </div>
+                    <button onclick="localStorage.removeItem('luxe_recently_viewed'); products.renderRecentlyViewed();" class="text-gray-400 hover:text-white transition-colors text-sm">
+                        Clear History
+                    </button>
+                </div>
+                <div id="recentlyViewedGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Recently viewed injected here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Personalized Recommendations -->
+        <section id="recommendations" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-accent-neon/20 border border-accent-neon/30 mb-3">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-accent-neon"></i>
+                        <span class="text-sm text-accent-neon font-medium">Recommended For You</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-display font-bold mb-4">You May Also Like</h2>
+                    <p class="text-gray-400">Based on your browsing history</p>
+                </div>
+                <div id="recommendationsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Recommendations injected here -->
                 </div>
             </div>
         </section>

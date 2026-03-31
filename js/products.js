@@ -221,39 +221,52 @@ const products = {
             : `<span class="font-bold">$${product.price.toFixed(2)}</span>`;
 
         const badge = product.isNew 
-            ? `<span class="absolute top-3 left-3 px-3 py-1 bg-accent-purple text-xs font-semibold rounded-full">NEW</span>`
+            ? `<span class="absolute top-3 left-3 px-3 py-1 bg-accent-purple text-xs font-semibold rounded-full glow-badge">NEW</span>`
             : product.isSale
             ? `<span class="absolute top-3 left-3 px-3 py-1 bg-red-500 text-xs font-semibold rounded-full">SALE</span>`
             : '';
 
+        // Generate star rating HTML
+        const fullStars = Math.floor(product.rating);
+        const hasHalfStar = product.rating % 1 >= 0.5;
+        let starsHtml = '';
+        
+        for (let i = 0; i < fullStars; i++) {
+            starsHtml += `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+        }
+        if (hasHalfStar) {
+            starsHtml += `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="url(#half)" stroke="#fbbf24" stroke-width="2"><defs><linearGradient id="half"><stop offset="50%" stop-color="#fbbf24"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+        }
+
         return `
-            <div class="product-card bg-dark-800 rounded-2xl overflow-hidden group cursor-pointer" onclick="products.showQuickView(${product.id})">
+            <div class="product-card bg-dark-800 rounded-2xl overflow-hidden group cursor-pointer hover:shadow-2xl hover:shadow-accent-purple/20 transition-all duration-300" data-product-id="${product.id}" onclick="products.trackView(${product.id}); ui.openQuickView(${product.id})">
                 <div class="relative overflow-hidden aspect-square">
                     <img 
                         src="${product.image}" 
                         alt="${product.name}"
-                        class="product-image w-full h-full object-cover"
+                        class="product-image w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         loading="lazy"
                     >
                     ${badge}
+                    ${product.stock && product.stock <= 5 ? `<span class="stock-badge">Only ${product.stock} left!</span>` : ''}
                     <div class="absolute inset-0 bg-dark-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-3">
-                        <button onclick="event.stopPropagation(); ui.openQuickView(${product.id})" class="w-12 h-12 rounded-full bg-white text-dark-900 flex items-center justify-center hover:scale-110 transition-transform">
+                        <button onclick="event.stopPropagation(); ui.openQuickView(${product.id})" class="w-12 h-12 rounded-full bg-white text-dark-900 flex items-center justify-center hover:scale-110 transition-transform mobile-touch-target" aria-label="Quick view">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
-                        <button onclick="event.stopPropagation(); wishlist.toggle(${product.id})" class="w-12 h-12 rounded-full bg-white text-dark-900 flex items-center justify-center hover:scale-110 transition-transform">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                        <button onclick="event.stopPropagation(); wishlist.toggle(${product.id}); this.classList.toggle('text-red-500'); ui.sparkleWishlist(this)" class="w-12 h-12 rounded-full bg-white text-dark-900 flex items-center justify-center hover:scale-110 transition-transform mobile-touch-target ${wishlist.isInWishlist(product.id) ? 'text-red-500' : ''}" aria-label="Add to wishlist">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${wishlist.isInWishlist(product.id) ? '#ef4444' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                         </button>
                     </div>
                 </div>
                 <div class="p-5">
                     <div class="flex items-center space-x-1 mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                        <span class="text-sm text-gray-400">${product.rating} (${product.reviews})</span>
+                        ${starsHtml}
+                        <span class="text-sm text-gray-400 ml-1">${product.rating} (${product.reviews})</span>
                     </div>
                     <h3 class="font-semibold mb-2 group-hover:text-accent-purple transition-colors">${product.name}</h3>
                     <div class="flex items-center justify-between">
                         <div class="text-lg">${price}</div>
-                        <button onclick="event.stopPropagation(); cart.addItem(${product.id})" class="w-10 h-10 rounded-full bg-dark-700 hover:bg-accent-purple flex items-center justify-center transition-colors">
+                        <button onclick="event.stopPropagation(); cart.addItem(${product.id})" class="w-10 h-10 rounded-full bg-dark-700 hover:bg-accent-purple flex items-center justify-center transition-colors mobile-touch-target" aria-label="Add to cart">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
                         </button>
                     </div>
@@ -280,6 +293,55 @@ const products = {
 
     showQuickView(id) {
         ui.openQuickView(id);
+    },
+
+    // Track product views for recommendations
+    trackView(productId) {
+        let recentlyViewed = JSON.parse(localStorage.getItem('luxe_recently_viewed') || '[]');
+        
+        // Remove if already exists (to move to front)
+        recentlyViewed = recentlyViewed.filter(id => id !== productId);
+        
+        // Add to front
+        recentlyViewed.unshift(productId);
+        
+        // Keep only last 8
+        recentlyViewed = recentlyViewed.slice(0, 8);
+        
+        localStorage.setItem('luxe_recently_viewed', JSON.stringify(recentlyViewed));
+    },
+
+    getRecentlyViewed() {
+        const recentlyViewed = JSON.parse(localStorage.getItem('luxe_recently_viewed') || '[]');
+        return recentlyViewed.map(id => this.getById(id)).filter(p => p);
+    },
+
+    getRecommendations(currentProductId) {
+        const currentProduct = this.getById(currentProductId);
+        if (!currentProduct) return [];
+        
+        // Get products from same category excluding current
+        return this.data
+            .filter(p => p.category === currentProduct.category && p.id !== currentProductId)
+            .slice(0, 4);
+    },
+
+    renderRecentlyViewed() {
+        const container = document.getElementById('recentlyViewedGrid');
+        if (!container) return;
+        
+        const recent = this.getRecentlyViewed();
+        
+        if (recent.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+        
+        // Show section if hidden
+        const section = document.getElementById('recentlyViewedSection');
+        if (section) section.classList.remove('hidden');
+        
+        container.innerHTML = recent.map(p => this.createProductCard(p)).join('');
     }
 };
 
